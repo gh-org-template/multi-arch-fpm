@@ -116,12 +116,12 @@
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Combine per architecture images into a single multi-arch manifest
         run: |
-          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64
-          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64
-          docker manifest create ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }} \
-            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64 \
-            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64
-          docker manifest push ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}
+          docker pull ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }}-aarch64
+          docker pull ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }}-x86_64
+          docker manifest create ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }} \
+            ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }}-aarch64 \
+            ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }}-x86_64
+          docker manifest push ghcr.io/gh-org-template/multi-arch-fpm:${{ needs.release.outputs.release-git-tag }}
 
     done:
       needs: [artifacts]
