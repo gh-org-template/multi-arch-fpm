@@ -8,7 +8,7 @@ if [ -n "${DEBUG:-}" ]; then
 fi
 
 function test() {
-    ls -lah /tmp/build/out
+    fpm --version
 }
 
 test

@@ -41,7 +41,6 @@
       strategy:
         matrix:
           architecture: [aarch64, x86_64]
-          ostype: [linux-gnu, linux-musl]
       runs-on: ubuntu-latest
       steps:
       - uses: actions/create-github-app-token@v1
@@ -60,7 +59,6 @@
         run: |
           grep -v '^#' .env >> $GITHUB_ENV
           echo "ARCHITECTURE=${{ matrix.architecture }}" >> $GITHUB_ENV
-          echo "OSTYPE=${{ matrix.ostype }}" >> $GITHUB_ENV
           echo "REGISTRY=ghcr.io"
       - name: Build and Package
         run: make build/package
@@ -76,41 +74,37 @@
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/gh-org-template/template-1-github-release
+          images: ghcr.io/gh-org-template/multi-arch-fpm
           sep-tags: ' '
           flavor: |
-            suffix=-${{ matrix.architecture }}-${{ matrix.ostype }}
+            suffix=-${{ matrix.architecture }}
           tags: |
             type=sha
             type=ref,event=branch
             type=semver,pattern={{version}},value=${{ needs.release.outputs.release-git-tag }}
             type=semver,pattern={{major}},value=${{ needs.release.outputs.release-git-tag }}
-            type=raw,value=${{ env.OPENSSL_VERSION }}
       - name: Retag and Push
         if: ${{ needs.release.outputs.published == 'true' }}
         run: |
           for tag in ${{ steps.meta.outputs.tags }}; do \
-            docker tag ghcr.io/template-1-github-release:build-$ARCHITECTURE-$OSTYPE $tag && \
+            docker tag ghcr.io/multi-arch-fpm:build-$ARCHITECTURE $tag && \
             docker push $tag; \
           done
       - name: Archive the package
         if: ${{ needs.release.outputs.published == 'true' }}
         run: |
-          tar -C package -czvf ${{ matrix.architecture }}-${{ matrix.ostype }}.tar.gz .
+          tar -C package -czvf ${{ matrix.architecture }}.tar.gz .
       - name: Add Release Artifact to the Github Release
         if: ${{ needs.release.outputs.published == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release.outputs.release-git-tag }}
-          files: ${{ matrix.architecture }}-${{ matrix.ostype }}.tar.gz
+          files: ${{ matrix.architecture }}.tar.gz
 
     multi-arch:
       needs: [release, artifacts]
       name: Create Release Artifacts
       if: ${{ needs.release.outputs.published == 'true' }}
-      strategy:
-        matrix:
-          ostype: [linux-gnu, linux-musl]
       runs-on: ubuntu-latest
       steps:
       - name: Log in to the Container registry
@@ -122,12 +116,12 @@
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Combine per architecture images into a single multi-arch manifest
         run: |
-          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64-${{ matrix.ostype }}
-          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64-${{ matrix.ostype }}
-          docker manifest create ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-${{ matrix.ostype }} \
-            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64-${{ matrix.ostype }} \
-            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64-${{ matrix.ostype }}
-          docker manifest push ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-${{ matrix.ostype }}
+          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64
+          docker pull ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64
+          docker manifest create ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }} \
+            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-aarch64 \
+            ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}-x86_64
+          docker manifest push ghcr.io/gh-org-template/template-1-github-release:${{ needs.release.outputs.release-git-tag }}
 
     done:
       needs: [artifacts]
