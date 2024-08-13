@@ -1,0 +1,20 @@
+sources:
+  rubyLatestVersion:
+    name: Get latest release
+    kind: githubrelease
+    spec:
+      owner: ruby
+      repository: ruby
+      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
+      username: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+targets:
+  updateBaseDockerVersion:
+    name: "Update base image"
+    sourceid: rubyLatestVersion
+    kind: dockerfile
+    spec:
+      files:
+        - Dockerfile
+      instruction:
+        keyword: "ARG"
+        matcher: "VERSION"

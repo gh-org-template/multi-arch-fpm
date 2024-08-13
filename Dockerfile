@@ -2,8 +2,8 @@ ARG ARCHITECTURE=x86_64
 ARG DOCKER_REGISTRY=ghcr.io
 ARG DOCKER_IMAGE_NAME
 ARG DOCKER_ARCHITECTURE
-
-FROM --platform=linux/${ARCHITECTURE} ruby:3.2.5-bookworm AS build
+ARG VERSION=3.2.5
+FROM --platform=linux/${ARCHITECTURE} ruby:${VERSION}-bookworm AS build
 
 COPY . /src
 RUN /src/build.sh && /src/test.sh
