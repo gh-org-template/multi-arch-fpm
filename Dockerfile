@@ -1,13 +1,9 @@
 ARG ARCHITECTURE=x86_64
 ARG DOCKER_REGISTRY=ghcr.io
 ARG DOCKER_IMAGE_NAME
+ARG DOCKER_ARCHITECTURE
 
-# List out all image permutations to trick dependabot
-FROM --platform=linux/amd64 ruby:3.2.5-bookworm AS x86_64
-FROM --platform=linux/arm64 ruby:3.2.5-bookworm AS aarch64
-
-# Run the build script
-FROM $ARCHITECTURE AS build
+FROM --platform=linux/${ARCHITECTURE} ruby:3.2.5-bookworm AS build
 
 COPY . /src
 RUN /src/build.sh && /src/test.sh
