@@ -1,12 +1,12 @@
 sources:
   rubyLatestVersion:
-    name: Get latest release
-    kind: githubrelease
+    name: Get latest Ruby Docker tag
+    kind: dockerimage
     spec:
-      owner: ruby
-      repository: ruby
-      token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
-      username: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+      image: "ruby"
+      tagfilter: "^([0-9]+\\.[0-9]+\\.[0-9]+)$"
+      versionfilter:
+        kind: semver
 targets:
   updateBaseDockerVersion:
     name: "Update base image"
