@@ -1,12 +1,25 @@
-sources:
-  rubyLatestVersion:
-    name: Get latest release
-    kind: githubrelease
+scms:
+  repo:
+    kind: "github"
     spec:
-      owner: ruby
-      repository: ruby
+      user: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+      email: "chutchic@gmail.com"
+      owner: "gh-org-template"
+      repository: "multi-arch-fpm"
       token: '{{ requiredEnv "UPDATECLI_GITHUB_TOKEN" }}'
       username: '{{ requiredEnv "UPDATECLI_GITHUB_ACTOR" }}'
+      branch: "main"
+
+sources:
+  rubyLatestVersion:
+    name: Get latest Ruby Docker tag
+    kind: dockerimage
+    spec:
+      image: "ruby"
+      tagfilter: "^([0-9]+\\.[0-9]+\\.[0-9]+)$"
+      versionfilter:
+        kind: semver
+
 targets:
   updateBaseDockerVersion:
     name: "Update base image"
@@ -18,3 +31,15 @@ targets:
       instruction:
         keyword: "ARG"
         matcher: "VERSION"
+
+actions:
+  createPullRequest:
+    kind: "github/pullrequest"
+    scmid: repo
+    spec:
+      title: "chore: Update Dockerfile base image to latest ruby version"
+      description: "This PR updates the Dockerfile base image to the latest version of ruby."
+      labels:
+        - "auto-update"
+      automerge: true
+      draft: false
